@@ -1,0 +1,130 @@
+ <!DOCTYPE html>
+<html>
+<head>
+	<title>
+		BotUI
+	</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+	<link href="https://fonts.googleapis.com/css?family=Gugi" rel="stylesheet">
+
+	<link rel="stylesheet" type="text/css" href="https://unpkg.com/botui/build/botui.min.css">
+	<link rel="stylesheet" type="text/css" href="https://unpkg.com/botui/build/botui-theme-default.css">
+	<script src="https://cdn.jsdelivr.net/vue/latest/vue.min.js"></script>
+	<script src="https://unpkg.com/botui/build/botui.min.js"></script>
+	<style type="text/css">
+		html,body {
+			background: linear-gradient(to bottom right, #00fffc, #53ce79);
+			height: 100%;
+			width: 100%;
+			margin: 0px;
+		}
+
+		#header{
+			width: 100%;
+			height: 50px;
+			background-color: #1c1c1c;
+			color: #fff;
+			font-family: 'Gugi', cursive;
+			font-size: 25px;
+			padding-top: 8px; 
+		}
+		.botui-container{
+			background: none; 
+		}
+		.botui-message-content{
+			background-color: #ffffff;
+			color: #464646;
+			/*margin-top: 15px;*/
+		}
+		.botui-message-content.human{
+			background-color: #616161;
+			color: #fff;
+			/*margin-bottom: 10px;*/
+		}
+		::placeholder{
+			color: #1c1c1c;
+		}
+	</style>
+</head>
+<body>
+	<div id="header" class="text-center">MOVIE DIALOG CHATBOT</div>
+	<div class="botui-app-container" id="hello-world">
+		<bot-ui></bot-ui>	
+	</div>
+</body>
+<script type="text/javascript">
+
+	var accessToken = "79ce24f47dd545ac83424227ef556211";
+	var baseUrl = "https://api.api.ai/v1/";
+
+	function setResponse(text) {
+		botui.message.add({
+			delay: 500,
+			loading: true,
+			human: false,
+			content: text
+		}).then(function () { // wait till its shown
+	  return botui.action.text({ // show 'text' action
+	    action: {
+	      placeholder: 'Ask question'
+	    }
+	  });
+	}).then(function (res) { // get the result
+	  // console.log(res.value);
+
+	  	var text = res.value;
+	  	send(text);
+
+	});
+
+	}
+	
+	function send(text){
+
+		$.ajax({
+			type: "POST",
+			url: baseUrl + "query?v=20150910",
+			contentType: "application/json; charset=utf-8",
+			dataType: "json",
+			headers: {
+				"Authorization": "Bearer " + accessToken
+			},
+			data: JSON.stringify({ query: text, lang: "en", sessionId: "somerandomthing" }),
+
+			success: function(data) {
+				setResponse(data.result.fulfillment.speech);
+				console.log(data.result.fulfillment.speech);
+				console.log("hoo");
+			},
+			error: function() {
+				setResponse("Internal Server Error");
+			}
+		});
+
+	}
+</script>
+<script>
+	var botui = new BotUI('hello-world');
+	
+	botui.message.add({ // show a message
+	  human: false,
+	  content: 'Movie Dialog Chatbot welcomes you..'
+	}).then(function () { // wait till its shown
+	  return botui.action.text({ // show 'text' action
+	    action: {
+	      placeholder: 'Ask question'
+	    }
+	  });
+	}).then(function (res) { // get the result
+	  // console.log(res.value);
+
+	  	var text = res.value;
+	  	send(text);
+
+	});
+
+</script>
+</html>
